@@ -1,39 +1,53 @@
 <template>
   <section class="zy-tools">
-    <ZyPageHeader current="Tools" />
-    <!-- <GxjToolMenu> -->
-    <ZySectionHeader
-      title="图片工具"
-      class="c-mb-40 c-mt-40"
-      style="padding: 0 1.8rem"
+    <ZyPageHeader
+      current="Tools"
+      img="https://imgur.com/AadznD8.jpeg"
+      title="Tools"
+      subTitle="tools"
     />
-    <div class="project-list">
-      <div
-        class="project-item-card"
-        :title="item.abstract"
+    <a-collapse
+      v-model:activeKey="activeKey"
+      :bordered="false"
+      style="background: rgb(255, 255, 255)"
+      accordion
+    >
+      <template #expandIcon="{ isActive }">
+        <caret-right-outlined :rotate="isActive ? 90 : 0" />
+      </template>
+      <a-collapse-panel
+        :style="customStyle"
         v-for="(item, index) in state.toolsData"
         :key="index"
-        @click="viewWorks(item)"
-        ref="projectItem"
-        @mouseenter="(e) => handleMouseEnter(e, index)"
-        @mousemove="(e) => handleMouseEnter(e, index)"
-        @mouseleave="(e) => handleMouseLeave(e, index)"
       >
-        <img
-          class="card-img lazy-image"
-          v-bind:data-src="item.cover"
-          alt="pic"
-        />
-        <div class="project-item-card__glow">
-          <div class="glow-content">
-            <div class="work-info-icon">
-              <i class="iconfont icon-a-thecode"></i>
+        <template #header>
+          <h5 class="section-title c-mb-40">🎁 {{ item.category }}</h5>
+        </template>
+        <div class="project-list">
+          <div
+            v-for="(item1, index1) in item.info"
+            :key="item1"
+            class="project-item-card"
+            :title="item1.abstract"
+            @click="goToWbesite(item1.url)"
+            ref="projectItem"
+            @mouseenter="(e) => handleMouseEnter(e, index1)"
+            @mousemove="(e) => handleMouseEnter(e, index1)"
+            @mouseleave="(e) => handleMouseLeave(e, index1)"
+          >
+            <img class="card-img lazy-image" :src="item1.icon" alt="pic" />
+            <div class="project-item-card__glow">
+              <div class="glow-content">
+                <div class="work-info-icon">
+                  <i class="iconfont icon-a-thecode"></i>
+                </div>
+                <div class="work-info-title">{{ item1.title }}</div>
+              </div>
             </div>
-            <div class="work-info-title">{{ item.title }}</div>
           </div>
         </div>
-      </div>
-    </div>
+      </a-collapse-panel>
+    </a-collapse>
   </section>
   <ZyModal
     :minWidth="350"
@@ -57,13 +71,14 @@ import ZyModal from "../../components/common/ZyModal.vue";
 import ZyPageHeader from "../../components/common/ZyPageHeader.vue";
 import ZySectionHeader from "../../components/common/ZySectionHeader.vue";
 import WorkDetail from "../../components/common/work-detail.vue";
-// import GxjToolMenu from "../../components/common/GxjToolMenu.vue";
+import GxjToolsMenu from "../../components/common/GxjToolsMenu.vue";
 import lazyLoadImages from "../../libs/util.lazyLoad";
 import { goToPage } from "../../libs/util.router";
 import { toolsList } from "../../api/modules/api.tools";
 // 引用和状态变量
 const projectItemRefs = ref([]);
 const projectItem = ref(null);
+const activeKey = ref(["1"]);
 const state = reactive({
   show: {
     work: false,
@@ -88,6 +103,10 @@ const close = () => {
 const viewWorks = (item) => {
   state.viewData = item;
   state.show.work = true;
+};
+
+const goToWbesite = (url) => {
+  window.open(url, "_blank");
 };
 
 // 辅助函数：将 projectItemCard 旋转至鼠标位置
@@ -160,10 +179,41 @@ watch(
 
 const getToolsList = () => {
   toolsList(state.portfoliosQuery).then((res) => {
-    state.toolsData = res.data.result || [];
+    console.log("🚀 ~ toolsList ~ res:", res);
+
+    state.toolsData = resultFomat(res.data.result) || [];
+    console.log("🚀 ~ toolsList ~ toolsList:", state.toolsData);
   });
 };
-
+function resultFomat(result) {
+  return result.reduce((acc, obj) => {
+    // 如果 acc 中还没有这个 category，就创建一个新对象
+    if (!acc.some((item) => item.category === obj.category)) {
+      acc.push({
+        category: obj.category,
+        info: [],
+      });
+    }
+    // 查找对应的 category 对象，并添加当前对象到其 info 数组中
+    const categoryObj = acc.find((item) => item.category === obj.category);
+    if (categoryObj) {
+      categoryObj.info.push({
+        abstract: obj.abstract,
+        blank2: obj.blank2,
+        blank3: obj.blank3,
+        blank4: obj.blank4,
+        blank5: obj.blank5,
+        icon: obj.icon,
+        status: obj.status,
+        tag: obj.tag,
+        title: obj.title,
+        url: obj.url,
+        _id: obj._id,
+      });
+    }
+    return acc;
+  }, []);
+}
 getToolsList();
 
 onMounted(() => {});
@@ -196,9 +246,8 @@ $breakpoint-xl: 1200px; // 超大屏幕，如桌面电脑
 
 .zy-tools {
   background-color: #fff;
-  background-image: url(https://images.unsplash.com/photo-1604147706283-d7119b5b822c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80);
-  background-size: contain;
-  background-position: center center;
+
+  background-position: 50% 80%;
 
   .tools-head {
     display: flex;
@@ -322,7 +371,7 @@ $breakpoint-xl: 1200px; // 超大屏幕，如桌面电脑
       width: 100%;
       height: 100%;
       aspect-ratio: 16/9;
-      object-fit: cover;
+      object-fit: contain;
     }
 
     &:hover {
@@ -385,5 +434,46 @@ $breakpoint-xl: 1200px; // 超大屏幕，如桌面电脑
       }
     }
   }
+}
+.section-title {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  letter-spacing: 0;
+  font-weight: 800;
+  color: #7c7d7d;
+  font-size: 1.25rem;
+  line-height: 1.2;
+  -webkit-box-reflect: below -5px linear-gradient(transparent, rgba(0, 0, 0, 0.4));
+
+  span {
+    position: relative;
+    margin-left: 20px;
+    margin-right: 35px;
+    display: inline-block;
+    height: 1px;
+    border-bottom: dotted 2px rgba(225, 225, 235, 0.9);
+    width: 100%;
+
+    &:after {
+      content: attr(data-number);
+      border-radius: 50%;
+      position: absolute;
+      font-size: 11px;
+      font-weight: 600;
+      text-align: center;
+      color: #7b7b7d;
+      opacity: 0.8;
+      width: 15px;
+      height: 15px;
+      top: -6px;
+      right: -35px;
+    }
+  }
+}
+
+.title-icon {
+  font-size: 2.3rem;
+  margin-right: 15px;
 }
 </style>

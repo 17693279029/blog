@@ -26,7 +26,7 @@
 const frameIn = [
     {
         path: '/',
-        redirect: {name: 'index'},
+        redirect: { name: 'index' },
         component: () => import('@/layout/index.vue'),
         /*************************************************************************************/
         /********************children 建议最多 再加一级children  否则侧边栏体验不好*********************/
@@ -101,6 +101,22 @@ const frameIn = [
                             ],
                         },
                         component: () => import('@/views/blog/dir-messages-info.vue'),
+                    },
+                    {
+                        path: '/dir-tools-info',
+                        name: 'dir-tools-info',
+                        meta: {
+                            cache: true,
+                            title: '小工具管理',
+                            requiresAuth: true,
+                            perms: [
+                                'blog:tools:list',
+                                'blog:tools:create',
+                                'blog:tools:update',
+                                'blog:tools:delete',
+                            ],
+                        },
+                        component: () => import('@/views/blog/dir-tools-info.vue'),
                     }
                 ]
             },

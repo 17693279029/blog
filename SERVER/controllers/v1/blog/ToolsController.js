@@ -217,7 +217,7 @@ exports.toolsClientlist = [
                 { $limit: pageSize }
             ];
 
-            // 添加筛选条件
+            // 添加筛选条件 状态为true的才可在前台展示
             params.recommended && (fuzzyParams.recommended = params.recommended);
             fuzzyParams.status = true;
 
